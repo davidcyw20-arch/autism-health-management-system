@@ -1,7 +1,62 @@
-<template><CrudPage title="家长信息管理" description="维护家长、监护关系和紧急联系方式。" :columns="columns" :search-fields="searchFields" :form-fields="columns" :table-data="tableData" /></template>
+<template>
+  <CrudPage
+    title="家长信息管理"
+    description="维护家长、监护关系和紧急联系方式。"
+    :columns="columns"
+    :search-fields="searchFields"
+    :form-fields="formFields"
+    :list-api="getParentList"
+    :detail-api="getParentDetail"
+    :create-api="addParent"
+    :update-api="updateParent"
+    :delete-api="deleteParent"
+    :editable-roles="['admin', 'doctor']"
+  />
+</template>
+
 <script setup>
 import CrudPage from '@/components/CrudPage.vue'
-const columns = [{ label: '家长姓名', prop: 'parentName' }, { label: '关系', prop: 'relationType' }, { label: '电话', prop: 'phone' }, { label: '职业', prop: 'occupation' }]
-const searchFields = [{ label: '家长姓名', prop: 'parentName' }, { label: '电话', prop: 'phone' }]
-const tableData = [{ parentName: '张敏', relationType: '母亲', phone: '13800000004', occupation: '会计' }, { parentName: '刘强', relationType: '父亲', phone: '13800000005', occupation: '教师' }]
+import { addParent, deleteParent, getParentDetail, getParentList, updateParent } from '@/api/parent'
+
+const genderOptions = [
+  { label: '男', value: 1 },
+  { label: '女', value: 2 }
+]
+
+const relationOptions = [
+  { label: '父亲', value: '父亲' },
+  { label: '母亲', value: '母亲' },
+  { label: '祖父母', value: '祖父母' },
+  { label: '其他监护人', value: '其他监护人' }
+]
+
+const columns = [
+  { label: 'ID', prop: 'id', width: 80 },
+  { label: '家长姓名', prop: 'parentName', width: 120 },
+  { label: '关系', prop: 'relationType' },
+  { label: '电话', prop: 'phone', width: 140 },
+  { label: '微信', prop: 'wechat', width: 140 },
+  { label: '职业', prop: 'occupation' }
+]
+
+const searchFields = [
+  { label: '家长姓名', prop: 'parentName' },
+  { label: '电话', prop: 'phone' },
+  { label: '关系', prop: 'relationType', type: 'select', options: relationOptions }
+]
+
+const formFields = [
+  { label: '关联用户ID', prop: 'userId', type: 'number', min: 1, required: false },
+  { label: '家长姓名', prop: 'parentName', maxlength: 50 },
+  { label: '性别', prop: 'gender', type: 'select', options: genderOptions, required: false },
+  { label: '关系类型', prop: 'relationType', type: 'select', options: relationOptions },
+  { label: '联系电话', prop: 'phone', maxlength: 20 },
+  { label: '微信', prop: 'wechat', maxlength: 50, required: false },
+  { label: '职业', prop: 'occupation', maxlength: 50, required: false },
+  { label: '学历', prop: 'educationLevel', maxlength: 50, required: false },
+  { label: '地址', prop: 'address', type: 'textarea', rows: 2, maxlength: 255, required: false },
+  { label: '紧急联系人', prop: 'emergencyContact', maxlength: 50, required: false },
+  { label: '紧急联系电话', prop: 'emergencyPhone', maxlength: 20, required: false },
+  { label: '备注', prop: 'remark', type: 'textarea', rows: 3, maxlength: 255, required: false }
+]
 </script>

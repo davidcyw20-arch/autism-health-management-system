@@ -1,29 +1,35 @@
 package com.autismhealth.modules.log.controller;
 
-import com.autismhealth.common.result.PageResult;
 import com.autismhealth.common.result.Result;
+import com.autismhealth.modules.log.dto.LogQueryDTO;
+import com.autismhealth.modules.log.entity.SysLog;
+import com.autismhealth.modules.log.service.SysLogService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * 系统日志控制器。
  */
 @RestController
 @RequestMapping("/logs")
+@RequiredArgsConstructor
 public class LogController {
 
+    private final SysLogService sysLogService;
+
     @GetMapping
-    public Result<PageResult<Map<String, Object>>> page(@RequestParam(defaultValue = "1") Integer current,
-                                                        @RequestParam(defaultValue = "10") Integer size) {
-        List<Map<String, Object>> records = List.of(
-                Map.of("id", 1, "moduleName", "用户管理", "operationType", "新增", "username", "admin", "operationStatus", 1),
-                Map.of("id", 2, "moduleName", "儿童档案管理", "operationType", "查询", "username", "doctor01", "operationStatus", 1)
-        );
-        return Result.success(new PageResult<>((long) records.size(), records));
+    public Result<Page<SysLog>> page(LogQueryDTO queryDTO) {
+        LambdaQueryWrapper<SysLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.hasText(queryDTO.getModuleName()), SysLog::getModuleName, queryDTO.getModuleName())
+                .like(StringUtils.hasText(queryDTO.getUsername()), SysLog::getUsername, queryDTO.getUsername())
+                .eq(queryDTO.getOperationStatus() != null, SysLog::getOperationStatus, queryDTO.getOperationStatus())
+                .orderByDesc(SysLog::getCreateTime);
+        Page<SysLog> page = sysLogService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper);
+        return Result.success(page);
     }
 }
