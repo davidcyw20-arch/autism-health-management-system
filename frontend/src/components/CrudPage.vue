@@ -5,12 +5,20 @@
         <h2>{{ title }}</h2>
         <p>{{ description }}</p>
       </div>
-      <el-button type="primary" @click="openAdd">新增</el-button>
+      <el-button v-if="canEdit" type="primary" @click="openAdd">新增</el-button>
     </div>
 
     <el-form :inline="true" :model="searchForm" class="search-bar">
       <el-form-item v-for="field in searchFields" :key="field.prop" :label="field.label">
-        <el-input v-model="searchForm[field.prop]" :placeholder="field.placeholder || `请输入${field.label}`" clearable />
+        <component
+          :is="getFieldComponent(field)"
+          v-model="searchForm[field.prop]"
+          v-bind="getFieldProps(field, true)"
+          clearable
+          class="field-width"
+        >
+          <el-option v-for="option in field.options || []" :key="option.value" :label="option.label" :value="option.value" />
+        </component>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="handleSearch">查询</el-button>
@@ -23,8 +31,8 @@
       <el-table-column label="操作" width="240" fixed="right">
         <template #default="scope">
           <el-button link type="primary" @click="viewRow(scope.row)">详情</el-button>
-          <el-button link type="warning" @click="editRow(scope.row)">编辑</el-button>
-          <el-button link type="danger" @click="removeRow(scope.row)">删除</el-button>
+          <el-button v-if="canEdit" link type="warning" @click="editRow(scope.row)">编辑</el-button>
+          <el-button v-if="canEdit" link type="danger" @click="removeRow(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -42,10 +50,16 @@
       />
     </div>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="620px">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="110px">
         <el-form-item v-for="field in formFields" :key="field.prop" :label="field.label" :prop="field.prop">
-          <el-input v-model="form[field.prop]" :placeholder="field.placeholder || `请输入${field.label}`" />
+          <component
+            :is="getFieldComponent(field)"
+            v-model="form[field.prop]"
+            v-bind="getFieldProps(field)"
+          >
+            <el-option v-for="option in field.options || []" :key="option.value" :label="option.label" :value="option.value" />
+          </component>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -68,6 +82,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { buildRequiredRules } from '@/utils/formRules'
+import { useUserStore } from '@/store/user'
 
 const props = defineProps({
   title: { type: String, default: '模块管理' },
@@ -80,9 +95,11 @@ const props = defineProps({
   createApi: { type: Function, default: null },
   updateApi: { type: Function, default: null },
   deleteApi: { type: Function, default: null },
-  tableDataFallback: { type: Array, default: () => [] }
+  tableDataFallback: { type: Array, default: () => [] },
+  editableRoles: { type: Array, default: () => ['admin', 'doctor'] }
 })
 
+const userStore = useUserStore()
 const formRef = ref()
 const loading = ref(false)
 const dialogVisible = ref(false)
@@ -94,7 +111,57 @@ const searchForm = reactive({})
 const tableData = ref([])
 const pageState = reactive({ current: 1, size: 5, total: 0 })
 
+const canEdit = computed(() => props.editableRoles.includes(userStore.userInfo.roleCode || ''))
 const rules = computed(() => buildRequiredRules(props.formFields))
+
+const getFieldComponent = field => {
+  if (field.type === 'number') return 'el-input-number'
+  if (field.type === 'date') return 'el-date-picker'
+  if (field.type === 'textarea') return 'el-input'
+  if (field.type === 'select') return 'el-select'
+  return 'el-input'
+}
+
+const getFieldProps = (field, isSearch = false) => {
+  if (field.type === 'number') {
+    return {
+      placeholder: field.placeholder || `请输入${field.label}`,
+      min: field.min ?? 0,
+      max: field.max,
+      precision: field.precision,
+      controlsPosition: 'right',
+      style: 'width: 100%'
+    }
+  }
+  if (field.type === 'date') {
+    return {
+      type: 'date',
+      valueFormat: 'YYYY-MM-DD',
+      placeholder: field.placeholder || `请选择${field.label}`,
+      style: 'width: 100%'
+    }
+  }
+  if (field.type === 'textarea') {
+    return {
+      type: 'textarea',
+      rows: field.rows || 3,
+      maxlength: field.maxlength,
+      showWordLimit: Boolean(field.maxlength),
+      placeholder: field.placeholder || `请输入${field.label}`
+    }
+  }
+  if (field.type === 'select') {
+    return {
+      placeholder: field.placeholder || `请选择${field.label}`,
+      filterable: true,
+      style: 'width: 100%'
+    }
+  }
+  return {
+    placeholder: field.placeholder || `请输入${field.label}`,
+    maxlength: isSearch ? undefined : field.maxlength
+  }
+}
 
 const buildParams = () => ({
   current: pageState.current,
@@ -145,9 +212,16 @@ const handleReset = async () => {
   await fetchData()
 }
 
+const resetFormData = () => {
+  Object.keys(form).forEach(key => delete form[key])
+  props.formFields.forEach(field => {
+    form[field.prop] = field.defaultValue ?? ''
+  })
+}
+
 const openAdd = () => {
   dialogTitle.value = '新增信息'
-  Object.keys(form).forEach(key => delete form[key])
+  resetFormData()
   dialogVisible.value = true
 }
 
@@ -163,6 +237,7 @@ const viewRow = async row => {
 
 const editRow = row => {
   dialogTitle.value = '编辑信息'
+  resetFormData()
   Object.assign(form, row)
   dialogVisible.value = true
 }
@@ -191,5 +266,10 @@ const removeRow = row => {
   })
 }
 
-onMounted(fetchData)
+onMounted(() => {
+  props.searchFields.forEach(field => {
+    searchForm[field.prop] = field.defaultValue ?? ''
+  })
+  fetchData()
+})
 </script>
