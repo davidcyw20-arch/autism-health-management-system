@@ -18,7 +18,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table :data="filteredTableData" border>
+    <el-table :data="pagedTableData" border>
       <el-table-column v-for="col in columns" :key="col.prop" :prop="col.prop" :label="col.label" :min-width="col.width || 120" />
       <el-table-column label="操作" width="240" fixed="right">
         <template #default="scope">
@@ -30,7 +30,14 @@
     </el-table>
 
     <div class="pagination-wrap">
-      <el-pagination background layout="total, prev, pager, next" :total="filteredTableData.length" :page-size="10" />
+      <el-pagination
+        background
+        layout="total, sizes, prev, pager, next"
+        :total="filteredTableData.length"
+        v-model:current-page="pageState.current"
+        v-model:page-size="pageState.size"
+        :page-sizes="[5, 10, 20]"
+      />
     </div>
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px">
@@ -58,6 +65,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { buildRequiredRules } from '@/utils/formRules'
 
 const props = defineProps({
   title: { type: String, default: '模块管理' },
@@ -75,11 +83,9 @@ const dialogTitle = ref('新增信息')
 const currentRow = reactive({})
 const form = reactive({})
 const searchForm = reactive({})
+const pageState = reactive({ current: 1, size: 5 })
 
-const rules = computed(() => props.formFields.reduce((acc, item) => {
-  acc[item.prop] = [{ required: true, message: `请输入${item.label}`, trigger: 'blur' }]
-  return acc
-}, {}))
+const rules = computed(() => buildRequiredRules(props.formFields))
 
 const filteredTableData = computed(() => {
   return props.tableData.filter(row => {
@@ -91,9 +97,20 @@ const filteredTableData = computed(() => {
   })
 })
 
-const handleSearch = () => ElMessage.success('已按条件筛选演示数据')
+const pagedTableData = computed(() => {
+  const start = (pageState.current - 1) * pageState.size
+  const end = start + pageState.size
+  return filteredTableData.value.slice(start, end)
+})
+
+const handleSearch = () => {
+  pageState.current = 1
+  ElMessage.success('已按条件筛选演示数据')
+}
+
 const handleReset = () => {
   Object.keys(searchForm).forEach(key => { searchForm[key] = '' })
+  pageState.current = 1
 }
 
 const openAdd = () => {

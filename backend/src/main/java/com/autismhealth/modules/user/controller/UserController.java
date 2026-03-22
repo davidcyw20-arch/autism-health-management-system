@@ -2,11 +2,14 @@ package com.autismhealth.modules.user.controller;
 
 import com.autismhealth.common.result.Result;
 import com.autismhealth.modules.user.dto.UserQueryDTO;
+import com.autismhealth.modules.user.dto.UserSaveDTO;
 import com.autismhealth.modules.user.entity.SysUser;
 import com.autismhealth.modules.user.service.SysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,12 +41,16 @@ public class UserController {
     }
 
     @PostMapping
-    public Result<Boolean> add(@RequestBody SysUser user) {
+    public Result<Boolean> add(@Valid @RequestBody UserSaveDTO dto) {
+        SysUser user = new SysUser();
+        BeanUtils.copyProperties(dto, user);
         return Result.success("新增成功", sysUserService.save(user));
     }
 
     @PutMapping("/{id}")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody SysUser user) {
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody UserSaveDTO dto) {
+        SysUser user = new SysUser();
+        BeanUtils.copyProperties(dto, user);
         user.setId(id);
         return Result.success("修改成功", sysUserService.updateById(user));
     }
