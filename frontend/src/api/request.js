@@ -1,8 +1,10 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+
 const service = axios.create({
-  baseURL: '/api',
+  baseURL: apiBaseUrl,
   timeout: 10000
 })
 
@@ -10,14 +12,17 @@ const fallbackMessageByStatus = {
   400: '请求参数有误，请检查后重试',
   401: '登录状态已失效，请重新登录',
   403: '当前账号无权限访问该功能',
-  404: '请求的服务不存在，请联系管理员',
-  500: '服务暂时不可用，请稍后再试'
+  404: '请求的服务不存在，请确认接口地址与后端服务',
+  500: '后端服务处理请求失败，请检查数据库和服务日志',
+  502: '前端代理未连接到后端，请确认 Spring Boot 服务已启动',
+  503: '后端服务暂不可用，请确认 8080 端口服务已启动',
+  504: '请求后端超时，请稍后重试'
 }
 
 const pickMessage = (payload, status) => {
   if (typeof payload === 'string') {
     const trimmed = payload.trim()
-    if (trimmed && trimmed !== 'text' && trimmed.length <= 60) {
+    if (trimmed && trimmed !== 'text' && trimmed.length <= 80) {
       return trimmed
     }
   }
@@ -32,7 +37,7 @@ const pickMessage = (payload, status) => {
     }
   }
 
-  return fallbackMessageByStatus[status] || '网络异常，请稍后重试'
+  return fallbackMessageByStatus[status] || '网络异常，请检查前后端服务是否都已启动'
 }
 
 service.interceptors.request.use(config => {
@@ -64,7 +69,7 @@ service.interceptors.response.use(
   },
   error => {
     const status = error?.response?.status
-    const message = pickMessage(error?.response?.data || error, status)
+    const message = pickMessage(error?.response?.data || error?.message || error, status)
 
     if (status === 401) {
       ElMessage.error(message)
