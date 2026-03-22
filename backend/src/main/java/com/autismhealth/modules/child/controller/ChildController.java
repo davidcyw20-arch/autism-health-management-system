@@ -1,61 +1,55 @@
 package com.autismhealth.modules.child.controller;
 
-import com.autismhealth.common.result.PageResult;
 import com.autismhealth.common.result.Result;
+import com.autismhealth.modules.child.dto.ChildQueryDTO;
 import com.autismhealth.modules.child.entity.ChildProfile;
+import com.autismhealth.modules.child.service.ChildProfileService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 儿童档案控制器。
  */
 @RestController
 @RequestMapping("/children")
+@RequiredArgsConstructor
 public class ChildController {
 
+    private final ChildProfileService childProfileService;
+
     @GetMapping
-    public Result<PageResult<ChildProfile>> page() {
-        ChildProfile one = new ChildProfile();
-        one.setId(1L);
-        one.setChildNo("CH20250001");
-        one.setChildName("张晨曦");
-        one.setGender(1);
-        one.setBirthDate("2018-05-12");
-        one.setAutismLevel("中度");
-        one.setSchoolName("星光融合幼儿园");
-        one.setAddress("杭州市西湖区文三路88号");
-        one.setStatus(1);
-        return Result.success(new PageResult<>(1L, List.of(one)));
+    public Result<Page<ChildProfile>> page(ChildQueryDTO queryDTO) {
+        LambdaQueryWrapper<ChildProfile> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.hasText(queryDTO.getChildName()), ChildProfile::getChildName, queryDTO.getChildName())
+                .like(StringUtils.hasText(queryDTO.getChildNo()), ChildProfile::getChildNo, queryDTO.getChildNo())
+                .eq(StringUtils.hasText(queryDTO.getAutismLevel()), ChildProfile::getAutismLevel, queryDTO.getAutismLevel())
+                .eq(queryDTO.getStatus() != null, ChildProfile::getStatus, queryDTO.getStatus())
+                .orderByDesc(ChildProfile::getCreateTime);
+        Page<ChildProfile> page = childProfileService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper);
+        return Result.success(page);
     }
 
     @GetMapping("/{id}")
     public Result<ChildProfile> detail(@PathVariable Long id) {
-        ChildProfile one = new ChildProfile();
-        one.setId(id);
-        one.setChildNo("CH20250001");
-        one.setChildName("张晨曦");
-        one.setGender(1);
-        one.setBirthDate("2018-05-12");
-        one.setAutismLevel("中度");
-        one.setSchoolName("星光融合幼儿园");
-        one.setAddress("杭州市西湖区文三路88号");
-        one.setStatus(1);
-        return Result.success(one);
+        return Result.success(childProfileService.getById(id));
     }
 
     @PostMapping
-    public Result<String> add(@RequestBody ChildProfile childProfile) {
-        return Result.success("新增成功", "child created");
+    public Result<Boolean> add(@RequestBody ChildProfile childProfile) {
+        return Result.success("新增成功", childProfileService.save(childProfile));
     }
 
     @PutMapping("/{id}")
-    public Result<String> update(@PathVariable Long id, @RequestBody ChildProfile childProfile) {
-        return Result.success("修改成功", "child updated: " + id);
+    public Result<Boolean> update(@PathVariable Long id, @RequestBody ChildProfile childProfile) {
+        childProfile.setId(id);
+        return Result.success("修改成功", childProfileService.updateById(childProfile));
     }
 
     @DeleteMapping("/{id}")
-    public Result<String> delete(@PathVariable Long id) {
-        return Result.success("删除成功", "child deleted: " + id);
+    public Result<Boolean> delete(@PathVariable Long id) {
+        return Result.success("删除成功", childProfileService.removeById(id));
     }
 }
