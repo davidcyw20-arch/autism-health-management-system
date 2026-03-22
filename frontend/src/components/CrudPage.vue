@@ -17,7 +17,9 @@
           clearable
           class="field-width"
         >
-          <el-option v-for="option in field.options || []" :key="option.value" :label="option.label" :value="option.value" />
+          <template v-if="field.type === 'select'">
+            <el-option v-for="option in field.options || []" :key="option.value" :label="option.label" :value="option.value" />
+          </template>
         </component>
       </el-form-item>
       <el-form-item>
@@ -58,7 +60,9 @@
             v-model="form[field.prop]"
             v-bind="getFieldProps(field)"
           >
-            <el-option v-for="option in field.options || []" :key="option.value" :label="option.label" :value="option.value" />
+            <template v-if="field.type === 'select'">
+              <el-option v-for="option in field.options || []" :key="option.value" :label="option.label" :value="option.value" />
+            </template>
           </component>
         </el-form-item>
       </el-form>

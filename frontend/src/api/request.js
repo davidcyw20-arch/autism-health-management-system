@@ -6,6 +6,35 @@ const service = axios.create({
   timeout: 10000
 })
 
+const fallbackMessageByStatus = {
+  400: '请求参数有误，请检查后重试',
+  401: '登录状态已失效，请重新登录',
+  403: '当前账号无权限访问该功能',
+  404: '请求的服务不存在，请联系管理员',
+  500: '服务暂时不可用，请稍后再试'
+}
+
+const pickMessage = (payload, status) => {
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim()
+    if (trimmed && trimmed !== 'text' && trimmed.length <= 60) {
+      return trimmed
+    }
+  }
+
+  if (payload && typeof payload === 'object') {
+    const candidate = payload.message || payload.msg || payload.error
+    if (typeof candidate === 'string') {
+      const trimmed = candidate.trim()
+      if (trimmed && trimmed !== 'text') {
+        return trimmed
+      }
+    }
+  }
+
+  return fallbackMessageByStatus[status] || '网络异常，请稍后重试'
+}
+
 service.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
   if (token) {
@@ -17,8 +46,13 @@ service.interceptors.request.use(config => {
 service.interceptors.response.use(
   response => {
     const res = response.data
+    if (!res || typeof res !== 'object') {
+      ElMessage.error(pickMessage(res, response.status))
+      return Promise.reject(res)
+    }
+
     if (res.code !== 200) {
-      ElMessage.error(res.message || '请求失败')
+      ElMessage.error(pickMessage(res, res.code || response.status))
       if (res.code === 401) {
         localStorage.removeItem('token')
         localStorage.removeItem('userInfo')
@@ -30,15 +64,15 @@ service.interceptors.response.use(
   },
   error => {
     const status = error?.response?.status
+    const message = pickMessage(error?.response?.data || error, status)
+
     if (status === 401) {
-      ElMessage.error('登录状态已失效，请重新登录')
+      ElMessage.error(message)
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
       window.location.href = '/login'
-    } else if (status === 403) {
-      ElMessage.error('当前账号无权限访问该功能')
     } else {
-      ElMessage.error(error.message || '网络异常')
+      ElMessage.error(message)
     }
     return Promise.reject(error)
   }
