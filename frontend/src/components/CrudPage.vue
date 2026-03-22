@@ -18,7 +18,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table :data="pagedTableData" border>
+    <el-table v-loading="loading" :data="tableData" border>
       <el-table-column v-for="col in columns" :key="col.prop" :prop="col.prop" :label="col.label" :min-width="col.width || 120" />
       <el-table-column label="操作" width="240" fixed="right">
         <template #default="scope">
@@ -33,10 +33,12 @@
       <el-pagination
         background
         layout="total, sizes, prev, pager, next"
-        :total="filteredTableData.length"
+        :total="pageState.total"
         v-model:current-page="pageState.current"
         v-model:page-size="pageState.size"
         :page-sizes="[5, 10, 20]"
+        @current-change="fetchData"
+        @size-change="fetchData"
       />
     </div>
 
@@ -63,7 +65,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { buildRequiredRules } from '@/utils/formRules'
 
@@ -73,44 +75,74 @@ const props = defineProps({
   columns: { type: Array, default: () => [] },
   searchFields: { type: Array, default: () => [] },
   formFields: { type: Array, default: () => [] },
-  tableData: { type: Array, default: () => [] }
+  listApi: { type: Function, default: null },
+  detailApi: { type: Function, default: null },
+  createApi: { type: Function, default: null },
+  updateApi: { type: Function, default: null },
+  deleteApi: { type: Function, default: null },
+  tableDataFallback: { type: Array, default: () => [] }
 })
 
 const formRef = ref()
+const loading = ref(false)
 const dialogVisible = ref(false)
 const drawerVisible = ref(false)
 const dialogTitle = ref('新增信息')
 const currentRow = reactive({})
 const form = reactive({})
 const searchForm = reactive({})
-const pageState = reactive({ current: 1, size: 5 })
+const tableData = ref([])
+const pageState = reactive({ current: 1, size: 5, total: 0 })
 
 const rules = computed(() => buildRequiredRules(props.formFields))
 
-const filteredTableData = computed(() => {
-  return props.tableData.filter(row => {
-    return props.searchFields.every(field => {
-      const keyword = searchForm[field.prop]
-      if (!keyword) return true
-      return String(row[field.prop] ?? '').includes(keyword)
-    })
-  })
+const buildParams = () => ({
+  current: pageState.current,
+  size: pageState.size,
+  ...searchForm
 })
 
-const pagedTableData = computed(() => {
-  const start = (pageState.current - 1) * pageState.size
-  const end = start + pageState.size
-  return filteredTableData.value.slice(start, end)
-})
-
-const handleSearch = () => {
-  pageState.current = 1
-  ElMessage.success('已按条件筛选演示数据')
+const normalizePageData = payload => {
+  if (payload?.records) {
+    tableData.value = payload.records
+    pageState.total = Number(payload.total || 0)
+  } else if (Array.isArray(payload)) {
+    tableData.value = payload
+    pageState.total = payload.length
+  } else {
+    tableData.value = props.tableDataFallback
+    pageState.total = props.tableDataFallback.length
+  }
 }
 
-const handleReset = () => {
+const fetchData = async () => {
+  if (!props.listApi) {
+    tableData.value = props.tableDataFallback
+    pageState.total = props.tableDataFallback.length
+    return
+  }
+  loading.value = true
+  try {
+    const res = await props.listApi(buildParams())
+    normalizePageData(res.data)
+  } catch (error) {
+    tableData.value = props.tableDataFallback
+    pageState.total = props.tableDataFallback.length
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleSearch = async () => {
+  pageState.current = 1
+  await fetchData()
+  ElMessage.success('查询完成')
+}
+
+const handleReset = async () => {
   Object.keys(searchForm).forEach(key => { searchForm[key] = '' })
   pageState.current = 1
+  await fetchData()
 }
 
 const openAdd = () => {
@@ -119,8 +151,13 @@ const openAdd = () => {
   dialogVisible.value = true
 }
 
-const viewRow = row => {
-  Object.assign(currentRow, row)
+const viewRow = async row => {
+  if (props.detailApi && row.id) {
+    const res = await props.detailApi(row.id)
+    Object.assign(currentRow, res.data || row)
+  } else {
+    Object.assign(currentRow, row)
+  }
   drawerVisible.value = true
 }
 
@@ -134,13 +171,25 @@ const saveForm = async () => {
   if (formRef.value) {
     await formRef.value.validate()
   }
+  if (form.id && props.updateApi) {
+    await props.updateApi(form.id, form)
+  } else if (props.createApi) {
+    await props.createApi(form)
+  }
   dialogVisible.value = false
-  ElMessage.success('保存成功（演示页面）')
+  ElMessage.success('保存成功')
+  await fetchData()
 }
 
 const removeRow = row => {
-  ElMessageBox.confirm(`确认删除“${row[props.columns[0]?.prop] || '当前记录'}”吗？`, '删除确认', { type: 'warning' }).then(() => {
-    ElMessage.success('删除成功（演示页面）')
+  ElMessageBox.confirm(`确认删除“${row[props.columns[0]?.prop] || '当前记录'}”吗？`, '删除确认', { type: 'warning' }).then(async () => {
+    if (props.deleteApi && row.id) {
+      await props.deleteApi(row.id)
+    }
+    ElMessage.success('删除成功')
+    fetchData()
   })
 }
+
+onMounted(fetchData)
 </script>

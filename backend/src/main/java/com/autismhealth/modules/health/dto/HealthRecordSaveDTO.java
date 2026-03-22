@@ -1,22 +1,18 @@
-package com.autismhealth.modules.health.entity;
+package com.autismhealth.modules.health.dto;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
- * 健康记录实体。
+ * 健康记录新增/修改参数。
  */
 @Data
-@TableName("health_record")
-public class HealthRecord {
-    @TableId(type = IdType.AUTO)
-    private Long id;
+public class HealthRecordSaveDTO {
+    @NotNull(message = "儿童ID不能为空")
     private Long childId;
+    @NotNull(message = "记录日期不能为空")
     private LocalDate recordDate;
     private Double temperature;
     private Integer heartRate;
@@ -28,6 +24,4 @@ public class HealthRecord {
     private String abnormalSymptom;
     private String careAdvice;
     private Long recordedBy;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
 }

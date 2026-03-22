@@ -1,59 +1,63 @@
 package com.autismhealth.modules.health.controller;
 
-import com.autismhealth.common.result.PageResult;
 import com.autismhealth.common.result.Result;
+import com.autismhealth.modules.health.dto.HealthRecordQueryDTO;
+import com.autismhealth.modules.health.dto.HealthRecordSaveDTO;
 import com.autismhealth.modules.health.entity.HealthRecord;
+import com.autismhealth.modules.health.service.HealthRecordService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 
 /**
  * 健康记录控制器。
  */
 @RestController
 @RequestMapping("/health-records")
+@RequiredArgsConstructor
 public class HealthRecordController {
 
+    private final HealthRecordService healthRecordService;
+
     @GetMapping
-    public Result<PageResult<HealthRecord>> page() {
-        HealthRecord one = new HealthRecord();
-        one.setId(1L);
-        one.setChildId(1L);
-        one.setRecordDate("2025-03-01");
-        one.setTemperature(36.5);
-        one.setHeartRate(92);
-        one.setSleepHours(9.0);
-        one.setEmotionState("平稳");
-        one.setAbnormalSymptom("无");
-        return Result.success(new PageResult<>(1L, List.of(one)));
+    public Result<Page<HealthRecord>> page(HealthRecordQueryDTO queryDTO) {
+        LambdaQueryWrapper<HealthRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(queryDTO.getChildId() != null, HealthRecord::getChildId, queryDTO.getChildId())
+                .eq(StringUtils.hasText(queryDTO.getEmotionState()), HealthRecord::getEmotionState, queryDTO.getEmotionState())
+                .ge(StringUtils.hasText(queryDTO.getRecordDateStart()), HealthRecord::getRecordDate, LocalDate.parse(queryDTO.getRecordDateStart()))
+                .le(StringUtils.hasText(queryDTO.getRecordDateEnd()), HealthRecord::getRecordDate, LocalDate.parse(queryDTO.getRecordDateEnd()))
+                .orderByDesc(HealthRecord::getRecordDate);
+        return Result.success(healthRecordService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper));
     }
 
     @GetMapping("/{id}")
     public Result<HealthRecord> detail(@PathVariable Long id) {
-        HealthRecord one = new HealthRecord();
-        one.setId(id);
-        one.setChildId(1L);
-        one.setRecordDate("2025-03-01");
-        one.setTemperature(36.5);
-        one.setHeartRate(92);
-        one.setSleepHours(9.0);
-        one.setEmotionState("平稳");
-        one.setAbnormalSymptom("无");
-        return Result.success(one);
+        return Result.success(healthRecordService.getById(id));
     }
 
     @PostMapping
-    public Result<String> add(@RequestBody HealthRecord healthRecord) {
-        return Result.success("新增成功", "health created");
+    public Result<Boolean> add(@Valid @RequestBody HealthRecordSaveDTO dto) {
+        HealthRecord entity = new HealthRecord();
+        BeanUtils.copyProperties(dto, entity);
+        return Result.success("新增成功", healthRecordService.save(entity));
     }
 
     @PutMapping("/{id}")
-    public Result<String> update(@PathVariable Long id, @RequestBody HealthRecord healthRecord) {
-        return Result.success("修改成功", "health updated: " + id);
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody HealthRecordSaveDTO dto) {
+        HealthRecord entity = new HealthRecord();
+        BeanUtils.copyProperties(dto, entity);
+        entity.setId(id);
+        return Result.success("修改成功", healthRecordService.updateById(entity));
     }
 
     @DeleteMapping("/{id}")
-    public Result<String> delete(@PathVariable Long id) {
-        return Result.success("删除成功", "health deleted: " + id);
+    public Result<Boolean> delete(@PathVariable Long id) {
+        return Result.success("删除成功", healthRecordService.removeById(id));
     }
 }

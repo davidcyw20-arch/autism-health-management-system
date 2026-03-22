@@ -1,55 +1,63 @@
 package com.autismhealth.modules.followup.controller;
 
-import com.autismhealth.common.result.PageResult;
 import com.autismhealth.common.result.Result;
+import com.autismhealth.modules.followup.dto.FollowUpQueryDTO;
+import com.autismhealth.modules.followup.dto.FollowUpSaveDTO;
 import com.autismhealth.modules.followup.entity.FollowUpRecord;
+import com.autismhealth.modules.followup.service.FollowUpRecordService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 
 /**
  * 随访记录控制器。
  */
 @RestController
 @RequestMapping("/followups")
+@RequiredArgsConstructor
 public class FollowUpController {
 
+    private final FollowUpRecordService followUpRecordService;
+
     @GetMapping
-    public Result<PageResult<FollowUpRecord>> page() {
-        FollowUpRecord one = new FollowUpRecord();
-        one.setId(1L);
-        one.setChildId(1L);
-        one.setFollowUpDate("2025-03-05");
-        one.setFollowUpMethod("电话");
-        one.setRecoveryProgress("语言表达有小幅提升");
-        one.setFamilyFeedback("家庭配合度较高");
-        return Result.success(new PageResult<>(1L, List.of(one)));
+    public Result<Page<FollowUpRecord>> page(FollowUpQueryDTO queryDTO) {
+        LambdaQueryWrapper<FollowUpRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(queryDTO.getChildId() != null, FollowUpRecord::getChildId, queryDTO.getChildId())
+                .eq(StringUtils.hasText(queryDTO.getFollowUpMethod()), FollowUpRecord::getFollowUpMethod, queryDTO.getFollowUpMethod())
+                .ge(StringUtils.hasText(queryDTO.getFollowUpDateStart()), FollowUpRecord::getFollowUpDate, LocalDate.parse(queryDTO.getFollowUpDateStart()))
+                .le(StringUtils.hasText(queryDTO.getFollowUpDateEnd()), FollowUpRecord::getFollowUpDate, LocalDate.parse(queryDTO.getFollowUpDateEnd()))
+                .orderByDesc(FollowUpRecord::getFollowUpDate);
+        return Result.success(followUpRecordService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper));
     }
 
     @GetMapping("/{id}")
     public Result<FollowUpRecord> detail(@PathVariable Long id) {
-        FollowUpRecord one = new FollowUpRecord();
-        one.setId(id);
-        one.setChildId(1L);
-        one.setFollowUpDate("2025-03-05");
-        one.setFollowUpMethod("电话");
-        one.setRecoveryProgress("语言表达有小幅提升");
-        one.setFamilyFeedback("家庭配合度较高");
-        return Result.success(one);
+        return Result.success(followUpRecordService.getById(id));
     }
 
     @PostMapping
-    public Result<String> add(@RequestBody FollowUpRecord record) {
-        return Result.success("新增成功", "followup created");
+    public Result<Boolean> add(@Valid @RequestBody FollowUpSaveDTO dto) {
+        FollowUpRecord entity = new FollowUpRecord();
+        BeanUtils.copyProperties(dto, entity);
+        return Result.success("新增成功", followUpRecordService.save(entity));
     }
 
     @PutMapping("/{id}")
-    public Result<String> update(@PathVariable Long id, @RequestBody FollowUpRecord record) {
-        return Result.success("修改成功", "followup updated: " + id);
+    public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FollowUpSaveDTO dto) {
+        FollowUpRecord entity = new FollowUpRecord();
+        BeanUtils.copyProperties(dto, entity);
+        entity.setId(id);
+        return Result.success("修改成功", followUpRecordService.updateById(entity));
     }
 
     @DeleteMapping("/{id}")
-    public Result<String> delete(@PathVariable Long id) {
-        return Result.success("删除成功", "followup deleted: " + id);
+    public Result<Boolean> delete(@PathVariable Long id) {
+        return Result.success("删除成功", followUpRecordService.removeById(id));
     }
 }

@@ -1,23 +1,21 @@
-package com.autismhealth.modules.assessment.entity;
+package com.autismhealth.modules.assessment.dto;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
- * 评估记录实体。
+ * 评估记录新增/修改参数。
  */
 @Data
-@TableName("assessment_record")
-public class AssessmentRecord {
-    @TableId(type = IdType.AUTO)
-    private Long id;
+public class AssessmentSaveDTO {
+    @NotNull(message = "儿童ID不能为空")
     private Long childId;
+    @NotNull(message = "评估日期不能为空")
     private LocalDate assessmentDate;
+    @NotBlank(message = "评估类型不能为空")
     private String assessmentType;
     private Long evaluatorId;
     private Double languageScore;
@@ -28,6 +26,4 @@ public class AssessmentRecord {
     private Double totalScore;
     private String assessmentConclusion;
     private String interventionSuggestion;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
 }
