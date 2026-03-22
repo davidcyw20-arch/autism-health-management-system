@@ -1,58 +1,89 @@
 <template>
-  <div class="card-panel">
-    <div class="page-header">
-      <div>
-        <h2>{{ title }}</h2>
-        <p>{{ description }}</p>
+  <div class="page-shell">
+    <section class="page-hero card-panel">
+      <div class="page-header">
+        <div class="page-header-main">
+          <div class="page-header-badge">业务管理</div>
+          <h2>{{ title }}</h2>
+          <p>{{ description }}</p>
+        </div>
+        <div class="page-header-actions">
+          <el-button v-if="canEdit" type="primary" @click="openAdd">新增记录</el-button>
+        </div>
       </div>
-      <el-button v-if="canEdit" type="primary" @click="openAdd">新增</el-button>
-    </div>
+    </section>
 
-    <el-form :inline="true" :model="searchForm" class="search-bar">
-      <el-form-item v-for="field in searchFields" :key="field.prop" :label="field.label">
-        <component
-          :is="getFieldComponent(field)"
-          v-model="searchForm[field.prop]"
-          v-bind="getFieldProps(field, true)"
-          clearable
-          class="field-width"
-        >
-          <template v-if="field.type === 'select'">
-            <el-option v-for="option in field.options || []" :key="option.value" :label="option.label" :value="option.value" />
-          </template>
-        </component>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="handleSearch">查询</el-button>
-        <el-button @click="handleReset">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <section class="search-panel card-panel">
+      <div class="panel-head">
+        <div>
+          <h3>筛选查询</h3>
+          <p>支持按业务字段快速定位记录，提升日常检索效率。</p>
+        </div>
+      </div>
 
-    <el-table v-loading="loading" :data="tableData" border>
-      <el-table-column v-for="col in columns" :key="col.prop" :prop="col.prop" :label="col.label" :min-width="col.width || 120" />
-      <el-table-column label="操作" width="240" fixed="right">
-        <template #default="scope">
-          <el-button link type="primary" @click="viewRow(scope.row)">详情</el-button>
-          <el-button v-if="canEdit" link type="warning" @click="editRow(scope.row)">编辑</el-button>
-          <el-button v-if="canEdit" link type="danger" @click="removeRow(scope.row)">删除</el-button>
+      <el-form :inline="true" :model="searchForm" class="search-bar">
+        <el-form-item v-for="field in searchFields" :key="field.prop" :label="field.label">
+          <component
+            :is="getFieldComponent(field)"
+            v-model="searchForm[field.prop]"
+            v-bind="getFieldProps(field, true)"
+            clearable
+            class="field-width"
+          >
+            <template v-if="field.type === 'select'">
+              <el-option v-for="option in field.options || []" :key="option.value" :label="option.label" :value="option.value" />
+            </template>
+          </component>
+        </el-form-item>
+        <el-form-item class="search-action-item">
+          <div class="toolbar-actions">
+            <el-button type="primary" @click="handleSearch">查询</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </div>
+        </el-form-item>
+      </el-form>
+    </section>
+
+    <section class="table-panel card-panel">
+      <div class="panel-head panel-head-inline">
+        <div>
+          <h3>记录列表</h3>
+          <p>共 {{ pageState.total }} 条数据，支持查看详情、编辑与删除操作。</p>
+        </div>
+      </div>
+
+      <el-table v-loading="loading" :data="tableData" border>
+        <template #empty>
+          <el-empty description="暂无相关记录，试试调整筛选条件" />
         </template>
-      </el-table-column>
-    </el-table>
 
-    <div class="pagination-wrap">
-      <el-pagination
-        background
-        layout="total, sizes, prev, pager, next"
-        :total="pageState.total"
-        v-model:current-page="pageState.current"
-        v-model:page-size="pageState.size"
-        :page-sizes="[5, 10, 20]"
-        @current-change="fetchData"
-        @size-change="fetchData"
-      />
-    </div>
+        <el-table-column v-for="col in columns" :key="col.prop" :prop="col.prop" :label="col.label" :min-width="col.width || 120" />
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="scope">
+            <div class="table-actions">
+              <el-button link type="primary" @click="viewRow(scope.row)">详情</el-button>
+              <el-button v-if="canEdit" link type="warning" @click="editRow(scope.row)">编辑</el-button>
+              <el-button v-if="canEdit" link type="danger" @click="removeRow(scope.row)">删除</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="620px">
+      <div class="pagination-wrap">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next"
+          :total="pageState.total"
+          v-model:current-page="pageState.current"
+          v-model:page-size="pageState.size"
+          :page-sizes="[5, 10, 20]"
+          @current-change="fetchData"
+          @size-change="fetchData"
+        />
+      </div>
+    </section>
+
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="620px" class="crud-dialog">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="110px">
         <el-form-item v-for="field in formFields" :key="field.prop" :label="field.label" :prop="field.prop">
           <component
@@ -72,7 +103,7 @@
       </template>
     </el-dialog>
 
-    <el-drawer v-model="drawerVisible" title="详情查看" size="35%">
+    <el-drawer v-model="drawerVisible" title="详情查看" size="35%" class="detail-drawer">
       <el-descriptions :column="1" border>
         <el-descriptions-item v-for="col in columns" :key="col.prop" :label="col.label">
           {{ currentRow[col.prop] || '--' }}

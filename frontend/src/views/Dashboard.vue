@@ -1,40 +1,59 @@
 <template>
-  <div>
+  <div class="dashboard-page">
     <div class="dashboard-banner card-panel">
-      <div>
+      <div class="banner-copy">
         <div class="hero-badge">{{ roleLabel }}</div>
         <h2>{{ welcomeTitle }}</h2>
         <p>{{ welcomeDesc }}</p>
       </div>
       <div class="dashboard-highlight">
-        <div class="highlight-item"><strong>{{ cards[0].value }}</strong><span>{{ cards[0].label }}</span></div>
-        <div class="highlight-item"><strong>{{ cards[1].value }}</strong><span>{{ cards[1].label }}</span></div>
+        <div class="highlight-item" v-for="item in highlightCards" :key="item.label">
+          <strong>{{ item.value }}</strong>
+          <span>{{ item.label }}</span>
+        </div>
       </div>
     </div>
 
     <div class="stat-grid">
-      <div class="stat-card gradient-card" v-for="item in cards" :key="item.label">
+      <div class="stat-card" v-for="item in cards" :key="item.label">
+        <div class="stat-card-top">
+          <span class="stat-card-caption">核心指标</span>
+        </div>
         <div class="stat-value">{{ item.value }}</div>
         <div class="stat-label">{{ item.label }}</div>
       </div>
     </div>
 
     <el-row :gutter="20">
-      <el-col :span="10">
+      <el-col :span="9">
         <div class="card-panel">
-          <h3>快捷入口</h3>
-          <div class="quick-grid">
-            <el-button v-for="item in shortcuts" :key="item.path" type="primary" plain @click="$router.push(item.path)">{{ item.label }}</el-button>
+          <div class="panel-head">
+            <div>
+              <h3>快捷入口</h3>
+              <p>将常用业务模块放在更靠前的位置，便于快速进入。</p>
+            </div>
+          </div>
+          <div class="quick-grid quick-grid-vertical">
+            <button v-for="item in shortcuts" :key="item.path" class="quick-entry" @click="$router.push(item.path)">
+              <span class="quick-entry-title">{{ item.label }}</span>
+              <span class="quick-entry-arrow">→</span>
+            </button>
           </div>
         </div>
+
         <div class="card-panel soft-panel">
-          <h3>系统特点</h3>
-          <ul class="feature-list">
+          <div class="panel-head">
+            <div>
+              <h3>系统特点</h3>
+              <p>界面和流程围绕医疗健康、儿童康复和家庭协同场景设计。</p>
+            </div>
+          </div>
+          <ul class="feature-list feature-list-card">
             <li v-for="item in features" :key="item">{{ item }}</li>
           </ul>
         </div>
       </el-col>
-      <el-col :span="14">
+      <el-col :span="15">
         <ChartCard :title="chartTitle" subtitle="展示阶段干预与管理效果变化" :option="chartOption" />
       </el-col>
     </el-row>
@@ -80,6 +99,8 @@ const cards = computed(() => ({
     { label: '随访结果', value: 1 }
   ]
 }[roleCode.value]))
+
+const highlightCards = computed(() => cards.value.slice(0, 2))
 
 const shortcuts = computed(() => ({
   admin: [
