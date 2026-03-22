@@ -1,7 +1,13 @@
 <template>
   <div class="layout">
     <aside class="sidebar">
-      <div class="logo">孤独症健康管理</div>
+      <div class="logo-wrap">
+        <div class="logo-icon">AH</div>
+        <div>
+          <div class="logo">孤独症健康管理</div>
+          <div class="logo-subtitle">Autism Health Platform</div>
+        </div>
+      </div>
       <el-menu :default-active="$route.path" router>
         <el-menu-item index="/dashboard">首页仪表盘</el-menu-item>
         <el-menu-item index="/children">儿童档案</el-menu-item>
@@ -18,8 +24,14 @@
     </aside>
     <main class="main">
       <header class="header">
-        <div>欢迎使用孤独症儿童健康信息管理系统</div>
-        <el-button type="primary" plain @click="logout">退出登录</el-button>
+        <div>
+          <div class="header-title">孤独症儿童健康信息管理系统</div>
+          <div class="header-subtitle">多角色协同 · 健康档案 · 康复训练 · 随访评估</div>
+        </div>
+        <div class="header-actions">
+          <el-tag type="success" effect="light">运行中</el-tag>
+          <el-button type="primary" plain @click="logout">退出登录</el-button>
+        </div>
       </header>
       <section class="content">
         <router-view />

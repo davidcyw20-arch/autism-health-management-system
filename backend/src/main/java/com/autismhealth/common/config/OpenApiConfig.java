@@ -16,6 +16,6 @@ public class OpenApiConfig {
         return new OpenAPI().info(new Info()
                 .title("孤独症儿童健康信息管理系统接口文档")
                 .version("1.0.0")
-                .description("用于本科毕业设计演示的后端接口文档"));
+                .description("孤独症儿童健康信息管理系统后端接口文档"));
     }
 }

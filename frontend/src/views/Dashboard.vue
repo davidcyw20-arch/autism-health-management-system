@@ -2,14 +2,18 @@
   <div>
     <div class="dashboard-banner card-panel">
       <div>
-        <h2>欢迎进入毕业设计演示系统</h2>
-        <p>本页可集中展示欢迎信息、统计卡片、快捷入口和趋势图表，适合开场演示。</p>
+        <div class="hero-badge">System Overview</div>
+        <h2>欢迎使用孤独症儿童健康信息管理系统</h2>
+        <p>本页集中展示系统概况、统计卡片、快捷入口和趋势图表，便于快速掌握儿童健康与康复管理情况。</p>
       </div>
-      <el-tag type="success" size="large">医疗信息平台风格</el-tag>
+      <div class="dashboard-highlight">
+        <div class="highlight-item"><strong>3</strong><span>在管儿童</span></div>
+        <div class="highlight-item"><strong>5</strong><span>本月训练</span></div>
+      </div>
     </div>
 
     <div class="stat-grid">
-      <div class="stat-card" v-for="item in cards" :key="item.label">
+      <div class="stat-card gradient-card" v-for="item in cards" :key="item.label">
         <div class="stat-value">{{ item.value }}</div>
         <div class="stat-label">{{ item.label }}</div>
       </div>
@@ -22,6 +26,14 @@
           <div class="quick-grid">
             <el-button v-for="item in shortcuts" :key="item.path" type="primary" plain @click="$router.push(item.path)">{{ item.label }}</el-button>
           </div>
+        </div>
+        <div class="card-panel soft-panel">
+          <h3>系统特点</h3>
+          <ul class="feature-list">
+            <li>统一管理儿童基础档案与家长信息</li>
+            <li>支持健康记录、康复训练、随访与评估全过程跟踪</li>
+            <li>支持图表化统计与管理决策分析</li>
+          </ul>
         </div>
       </el-col>
       <el-col :span="14">
