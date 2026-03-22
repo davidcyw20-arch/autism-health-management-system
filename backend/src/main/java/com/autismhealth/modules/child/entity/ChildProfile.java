@@ -33,7 +33,7 @@ public class ChildProfile {
     private LocalDate admissionDate;
     private Integer status;
     private String remark;
-    @TableLogic
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
     private Long createBy;
     private Long updateBy;

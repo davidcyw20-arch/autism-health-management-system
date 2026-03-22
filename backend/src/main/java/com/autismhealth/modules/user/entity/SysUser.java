@@ -26,7 +26,7 @@ public class SysUser {
     private Integer status;
     private LocalDateTime lastLoginTime;
     private String remark;
-    @TableLogic
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
