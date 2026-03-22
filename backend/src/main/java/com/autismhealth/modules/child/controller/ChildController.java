@@ -44,6 +44,9 @@ public class ChildController {
     public Result<Boolean> add(@Valid @RequestBody ChildSaveDTO dto) {
         ChildProfile childProfile = new ChildProfile();
         BeanUtils.copyProperties(dto, childProfile);
+        if (childProfile.getStatus() == null) {
+            childProfile.setStatus(1);
+        }
         return Result.success("新增成功", childProfileService.save(childProfile));
     }
 
@@ -52,6 +55,9 @@ public class ChildController {
         ChildProfile childProfile = new ChildProfile();
         BeanUtils.copyProperties(dto, childProfile);
         childProfile.setId(id);
+        if (childProfile.getStatus() == null) {
+            childProfile.setStatus(1);
+        }
         return Result.success("修改成功", childProfileService.updateById(childProfile));
     }
 
