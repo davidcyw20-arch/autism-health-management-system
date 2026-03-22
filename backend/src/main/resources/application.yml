@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: autism-health-management-system
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**/*.xml
+  type-aliases-package: com.autismhealth.modules.*.entity
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+jwt:
+  secret: autism-health-jwt-secret-key-demo
+  expire-hours: 24
+  issuer: autism-health-system
+
+logging:
+  level:
+    com.autismhealth: debug
+    org.springframework: info
