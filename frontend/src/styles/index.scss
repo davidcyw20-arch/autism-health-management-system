@@ -555,8 +555,13 @@ ul {
 
 .login-page {
   min-height: 100vh;
+  width: min(100%, 1540px);
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(460px, 0.85fr);
+  grid-template-columns: minmax(620px, 760px) minmax(420px, 500px);
+  justify-content: center;
+  align-items: center;
+  column-gap: clamp(44px, 5vw, 88px);
   position: relative;
   overflow: hidden;
   background:
@@ -590,7 +595,7 @@ ul {
 }
 
 .login-hero {
-  padding: 64px 78px;
+  padding: 64px 24px 64px 36px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -717,7 +722,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 36px 44px 36px 20px;
+  padding: 36px 24px 36px 12px;
 }
 
 .login-card {
