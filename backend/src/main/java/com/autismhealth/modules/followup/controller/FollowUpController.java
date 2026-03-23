@@ -1,6 +1,7 @@
 package com.autismhealth.modules.followup.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.followup.dto.FollowUpQueryDTO;
 import com.autismhealth.modules.followup.dto.FollowUpSaveDTO;
 import com.autismhealth.modules.followup.entity.FollowUpRecord;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 public class FollowUpController {
 
     private final FollowUpRecordService followUpRecordService;
+    private final EntityReferenceValidator entityReferenceValidator;
 
     @GetMapping
     public Result<Page<FollowUpRecord>> page(FollowUpQueryDTO queryDTO) {
@@ -43,6 +45,8 @@ public class FollowUpController {
 
     @PostMapping
     public Result<Boolean> add(@Valid @RequestBody FollowUpSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getFollowUpPerson(), "随访人");
         FollowUpRecord entity = new FollowUpRecord();
         BeanUtils.copyProperties(dto, entity);
         return Result.success("新增成功", followUpRecordService.save(entity));
@@ -50,6 +54,8 @@ public class FollowUpController {
 
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody FollowUpSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getFollowUpPerson(), "随访人");
         FollowUpRecord entity = new FollowUpRecord();
         BeanUtils.copyProperties(dto, entity);
         entity.setId(id);

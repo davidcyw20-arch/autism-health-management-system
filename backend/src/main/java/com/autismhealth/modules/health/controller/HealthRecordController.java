@@ -1,6 +1,7 @@
 package com.autismhealth.modules.health.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.health.dto.HealthRecordQueryDTO;
 import com.autismhealth.modules.health.dto.HealthRecordSaveDTO;
 import com.autismhealth.modules.health.entity.HealthRecord;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 public class HealthRecordController {
 
     private final HealthRecordService healthRecordService;
+    private final EntityReferenceValidator entityReferenceValidator;
 
     @GetMapping
     public Result<Page<HealthRecord>> page(HealthRecordQueryDTO queryDTO) {
@@ -43,6 +45,8 @@ public class HealthRecordController {
 
     @PostMapping
     public Result<Boolean> add(@Valid @RequestBody HealthRecordSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getRecordedBy(), "记录人");
         HealthRecord entity = new HealthRecord();
         BeanUtils.copyProperties(dto, entity);
         return Result.success("新增成功", healthRecordService.save(entity));
@@ -50,6 +54,8 @@ public class HealthRecordController {
 
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody HealthRecordSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getRecordedBy(), "记录人");
         HealthRecord entity = new HealthRecord();
         BeanUtils.copyProperties(dto, entity);
         entity.setId(id);

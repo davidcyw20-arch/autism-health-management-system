@@ -1,6 +1,7 @@
 package com.autismhealth.modules.rehabilitation.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.rehabilitation.dto.RehabilitationQueryDTO;
 import com.autismhealth.modules.rehabilitation.dto.RehabilitationSaveDTO;
 import com.autismhealth.modules.rehabilitation.entity.RehabilitationRecord;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 public class RehabilitationController {
 
     private final RehabilitationRecordService rehabilitationRecordService;
+    private final EntityReferenceValidator entityReferenceValidator;
 
     @GetMapping
     public Result<Page<RehabilitationRecord>> page(RehabilitationQueryDTO queryDTO) {
@@ -43,6 +45,8 @@ public class RehabilitationController {
 
     @PostMapping
     public Result<Boolean> add(@Valid @RequestBody RehabilitationSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getTrainerId(), "康复师");
         RehabilitationRecord entity = new RehabilitationRecord();
         BeanUtils.copyProperties(dto, entity);
         return Result.success("新增成功", rehabilitationRecordService.save(entity));
@@ -50,6 +54,8 @@ public class RehabilitationController {
 
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody RehabilitationSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getTrainerId(), "康复师");
         RehabilitationRecord entity = new RehabilitationRecord();
         BeanUtils.copyProperties(dto, entity);
         entity.setId(id);

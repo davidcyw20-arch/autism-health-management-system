@@ -1,6 +1,7 @@
 package com.autismhealth.modules.parent.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.parent.dto.ParentQueryDTO;
 import com.autismhealth.modules.parent.dto.ParentSaveDTO;
 import com.autismhealth.modules.parent.entity.ParentInfo;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class ParentController {
 
     private final ParentInfoService parentInfoService;
+    private final EntityReferenceValidator entityReferenceValidator;
 
     @GetMapping
     public Result<Page<ParentInfo>> page(ParentQueryDTO queryDTO) {
@@ -41,6 +43,7 @@ public class ParentController {
 
     @PostMapping
     public Result<Boolean> add(@Valid @RequestBody ParentSaveDTO dto) {
+        entityReferenceValidator.validateUserExists(dto.getUserId(), "关联用户");
         ParentInfo parentInfo = new ParentInfo();
         BeanUtils.copyProperties(dto, parentInfo);
         return Result.success("新增成功", parentInfoService.save(parentInfo));
@@ -48,6 +51,7 @@ public class ParentController {
 
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody ParentSaveDTO dto) {
+        entityReferenceValidator.validateUserExists(dto.getUserId(), "关联用户");
         ParentInfo parentInfo = new ParentInfo();
         BeanUtils.copyProperties(dto, parentInfo);
         parentInfo.setId(id);

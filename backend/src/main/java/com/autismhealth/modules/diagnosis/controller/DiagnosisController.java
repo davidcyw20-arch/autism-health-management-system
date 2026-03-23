@@ -1,6 +1,7 @@
 package com.autismhealth.modules.diagnosis.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.diagnosis.dto.DiagnosisQueryDTO;
 import com.autismhealth.modules.diagnosis.dto.DiagnosisSaveDTO;
 import com.autismhealth.modules.diagnosis.entity.DiagnosisInfo;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class DiagnosisController {
 
     private final DiagnosisInfoService diagnosisInfoService;
+    private final EntityReferenceValidator entityReferenceValidator;
 
     @GetMapping
     public Result<Page<DiagnosisInfo>> page(DiagnosisQueryDTO queryDTO) {
@@ -41,6 +43,8 @@ public class DiagnosisController {
 
     @PostMapping
     public Result<Boolean> add(@Valid @RequestBody DiagnosisSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getCreateBy(), "创建人");
         DiagnosisInfo diagnosisInfo = new DiagnosisInfo();
         BeanUtils.copyProperties(dto, diagnosisInfo);
         return Result.success("新增成功", diagnosisInfoService.save(diagnosisInfo));
@@ -48,6 +52,8 @@ public class DiagnosisController {
 
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody DiagnosisSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getCreateBy(), "创建人");
         DiagnosisInfo diagnosisInfo = new DiagnosisInfo();
         BeanUtils.copyProperties(dto, diagnosisInfo);
         diagnosisInfo.setId(id);

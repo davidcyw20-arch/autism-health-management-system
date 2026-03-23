@@ -1,6 +1,7 @@
 package com.autismhealth.modules.assessment.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.assessment.dto.AssessmentQueryDTO;
 import com.autismhealth.modules.assessment.dto.AssessmentSaveDTO;
 import com.autismhealth.modules.assessment.entity.AssessmentRecord;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 public class AssessmentController {
 
     private final AssessmentRecordService assessmentRecordService;
+    private final EntityReferenceValidator entityReferenceValidator;
 
     @GetMapping
     public Result<Page<AssessmentRecord>> page(AssessmentQueryDTO queryDTO) {
@@ -43,6 +45,8 @@ public class AssessmentController {
 
     @PostMapping
     public Result<Boolean> add(@Valid @RequestBody AssessmentSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getEvaluatorId(), "评估人");
         AssessmentRecord entity = new AssessmentRecord();
         BeanUtils.copyProperties(dto, entity);
         return Result.success("新增成功", assessmentRecordService.save(entity));
@@ -50,6 +54,8 @@ public class AssessmentController {
 
     @PutMapping("/{id}")
     public Result<Boolean> update(@PathVariable Long id, @Valid @RequestBody AssessmentSaveDTO dto) {
+        entityReferenceValidator.validateChildExists(dto.getChildId());
+        entityReferenceValidator.validateUserExists(dto.getEvaluatorId(), "评估人");
         AssessmentRecord entity = new AssessmentRecord();
         BeanUtils.copyProperties(dto, entity);
         entity.setId(id);

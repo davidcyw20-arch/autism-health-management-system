@@ -26,7 +26,6 @@ const genderOptions = [
 const roleOptions = [
   { label: '管理员', value: 'admin' },
   { label: '医生', value: 'doctor' },
-  { label: '康复师', value: 'therapist' },
   { label: '家长', value: 'parent' }
 ]
 
