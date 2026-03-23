@@ -38,7 +38,7 @@ public class AuthController {
             throw new BusinessException("用户名或密码错误");
         }
         String token = JwtTokenUtil.generateToken(user.getUsername(), Map.of("roleCode", user.getRoleCode(), "userId", user.getId()));
-        LoginVO vo = new LoginVO(token, user.getUsername(), user.getRealName(), user.getRoleCode());
+        LoginVO vo = new LoginVO(token, user.getId(), user.getUsername(), user.getRealName(), user.getRoleCode());
         return Result.success("登录成功", vo);
     }
 

@@ -1,7 +1,7 @@
 <template>
   <CrudPage
-    title="健康记录管理"
-    description="维护体温、睡眠、情绪、异常症状等日常健康信息。"
+    :title="pageTitle"
+    :description="pageDescription"
     :columns="columns"
     :search-fields="searchFields"
     :form-fields="formFields"
@@ -11,13 +11,28 @@
     :update-api="updateHealth"
     :delete-api="deleteHealth"
     :table-data-fallback="fallbackData"
-    :editable-roles="['admin', 'doctor']"
+    :editable-roles="editableRoles"
+    :query-builder="buildQueryParams"
   />
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import CrudPage from '@/components/CrudPage.vue'
 import { addHealth, deleteHealth, getHealthDetail, getHealthList, updateHealth } from '@/api/health'
+import { useUserStore } from '@/store/user'
+
+const userStore = useUserStore()
+const roleCode = computed(() => userStore.userInfo.roleCode || 'parent')
+const editableRoles = ['admin', 'doctor', 'parent']
+const pageTitle = computed(() => (roleCode.value === 'parent' ? '我的健康记录' : '健康记录管理'))
+const pageDescription = computed(() => (roleCode.value === 'parent'
+  ? '查看并补充自己关联儿童的体温、睡眠、情绪与异常症状记录。'
+  : '维护体温、睡眠、情绪、异常症状等日常健康信息。'))
+
+const buildQueryParams = (params, userInfo) => (roleCode.value === 'parent'
+  ? { ...params, parentUserId: userInfo.userId }
+  : params)
 
 const emotionOptions = [
   { label: '平稳', value: '平稳' },

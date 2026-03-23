@@ -9,6 +9,7 @@ import lombok.Data;
 public class ParentQueryDTO {
     private Integer current = 1;
     private Integer size = 10;
+    private Long userId;
     private String parentName;
     private String phone;
     private String relationType;

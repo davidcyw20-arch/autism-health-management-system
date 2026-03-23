@@ -1,7 +1,7 @@
 <template>
   <CrudPage
-    title="康复训练记录管理"
-    description="维护训练类型、主题、时长与训练表现。"
+    :title="pageTitle"
+    :description="pageDescription"
     :columns="columns"
     :search-fields="searchFields"
     :form-fields="formFields"
@@ -11,13 +11,28 @@
     :update-api="updateRehabilitation"
     :delete-api="deleteRehabilitation"
     :table-data-fallback="fallbackData"
-    :editable-roles="['admin', 'doctor']"
+    :editable-roles="editableRoles"
+    :query-builder="buildQueryParams"
   />
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import CrudPage from '@/components/CrudPage.vue'
 import { addRehabilitation, deleteRehabilitation, getRehabilitationDetail, getRehabilitationList, updateRehabilitation } from '@/api/rehabilitation'
+import { useUserStore } from '@/store/user'
+
+const userStore = useUserStore()
+const roleCode = computed(() => userStore.userInfo.roleCode || 'parent')
+const editableRoles = ['admin', 'doctor']
+const pageTitle = computed(() => (roleCode.value === 'parent' ? '我的康复训练记录' : '康复训练记录管理'))
+const pageDescription = computed(() => (roleCode.value === 'parent'
+  ? '查看自己关联儿童的训练类型、主题、时长与阶段表现。'
+  : '维护训练类型、主题、时长与训练表现。'))
+
+const buildQueryParams = (params, userInfo) => (roleCode.value === 'parent'
+  ? { ...params, parentUserId: userInfo.userId }
+  : params)
 
 const trainingTypeOptions = [
   { label: '语言训练', value: '语言训练' },

@@ -9,6 +9,7 @@ import lombok.Data;
 public class RehabilitationQueryDTO {
     private Integer current = 1;
     private Integer size = 10;
+    private Long parentUserId;
     private Long childId;
     private String trainingType;
     private String trainingDateStart;

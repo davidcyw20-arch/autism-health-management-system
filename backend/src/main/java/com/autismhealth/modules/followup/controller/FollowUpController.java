@@ -3,6 +3,7 @@ package com.autismhealth.modules.followup.controller;
 import com.autismhealth.common.result.Result;
 import com.autismhealth.common.support.DateQueryHelper;
 import com.autismhealth.common.support.EntityReferenceValidator;
+import com.autismhealth.common.support.ParentScopeHelper;
 import com.autismhealth.modules.followup.dto.FollowUpQueryDTO;
 import com.autismhealth.modules.followup.dto.FollowUpSaveDTO;
 import com.autismhealth.modules.followup.entity.FollowUpRecord;
@@ -27,6 +28,7 @@ public class FollowUpController {
 
     private final FollowUpRecordService followUpRecordService;
     private final EntityReferenceValidator entityReferenceValidator;
+    private final ParentScopeHelper parentScopeHelper;
 
     @GetMapping
     public Result<Page<FollowUpRecord>> page(FollowUpQueryDTO queryDTO) {
@@ -36,8 +38,11 @@ public class FollowUpController {
         wrapper.eq(queryDTO.getChildId() != null, FollowUpRecord::getChildId, queryDTO.getChildId())
                 .eq(StringUtils.hasText(queryDTO.getFollowUpMethod()), FollowUpRecord::getFollowUpMethod, queryDTO.getFollowUpMethod())
                 .ge(followUpDateStart != null, FollowUpRecord::getFollowUpDate, followUpDateStart)
-                .le(followUpDateEnd != null, FollowUpRecord::getFollowUpDate, followUpDateEnd)
-                .orderByDesc(FollowUpRecord::getFollowUpDate);
+                .le(followUpDateEnd != null, FollowUpRecord::getFollowUpDate, followUpDateEnd);
+        parentScopeHelper.applyChildScope(wrapper, queryDTO.getParentUserId(),
+                query -> query.apply("1 = 0"),
+                childIds -> wrapper.in(FollowUpRecord::getChildId, childIds));
+        wrapper.orderByDesc(FollowUpRecord::getFollowUpDate);
         return Result.success(followUpRecordService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper));
     }
 

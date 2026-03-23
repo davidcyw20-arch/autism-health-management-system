@@ -9,6 +9,7 @@ import lombok.Data;
 public class ChildQueryDTO {
     private Integer current = 1;
     private Integer size = 10;
+    private Long parentUserId;
     private String childName;
     private String childNo;
     private String autismLevel;

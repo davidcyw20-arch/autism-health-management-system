@@ -1,7 +1,7 @@
 <template>
   <CrudPage
-    title="儿童档案管理"
-    description="用于维护孤独症儿童基本档案、分级信息与就读机构信息。"
+    :title="pageTitle"
+    :description="pageDescription"
     :columns="columns"
     :search-fields="searchFields"
     :form-fields="formFields"
@@ -10,13 +10,28 @@
     :create-api="addChild"
     :update-api="updateChild"
     :delete-api="deleteChild"
-    :editable-roles="['admin', 'doctor']"
+    :editable-roles="editableRoles"
+    :query-builder="buildQueryParams"
   />
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import CrudPage from '@/components/CrudPage.vue'
 import { addChild, deleteChild, getChildDetail, getChildList, updateChild } from '@/api/child'
+import { useUserStore } from '@/store/user'
+
+const userStore = useUserStore()
+const roleCode = computed(() => userStore.userInfo.roleCode || 'parent')
+const editableRoles = ['admin', 'doctor']
+const pageTitle = computed(() => (roleCode.value === 'parent' ? '我的儿童档案' : '儿童档案管理'))
+const pageDescription = computed(() => (roleCode.value === 'parent'
+  ? '查看与当前家长账号已关联的儿童档案、分级信息与机构信息。'
+  : '用于维护孤独症儿童基本档案、分级信息与就读机构信息。'))
+
+const buildQueryParams = (params, userInfo) => (roleCode.value === 'parent'
+  ? { ...params, parentUserId: userInfo.userId }
+  : params)
 
 const genderOptions = [
   { label: '男', value: 1 },

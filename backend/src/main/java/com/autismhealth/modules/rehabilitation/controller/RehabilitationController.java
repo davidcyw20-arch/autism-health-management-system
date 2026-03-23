@@ -3,6 +3,7 @@ package com.autismhealth.modules.rehabilitation.controller;
 import com.autismhealth.common.result.Result;
 import com.autismhealth.common.support.DateQueryHelper;
 import com.autismhealth.common.support.EntityReferenceValidator;
+import com.autismhealth.common.support.ParentScopeHelper;
 import com.autismhealth.modules.rehabilitation.dto.RehabilitationQueryDTO;
 import com.autismhealth.modules.rehabilitation.dto.RehabilitationSaveDTO;
 import com.autismhealth.modules.rehabilitation.entity.RehabilitationRecord;
@@ -27,6 +28,7 @@ public class RehabilitationController {
 
     private final RehabilitationRecordService rehabilitationRecordService;
     private final EntityReferenceValidator entityReferenceValidator;
+    private final ParentScopeHelper parentScopeHelper;
 
     @GetMapping
     public Result<Page<RehabilitationRecord>> page(RehabilitationQueryDTO queryDTO) {
@@ -36,8 +38,11 @@ public class RehabilitationController {
         wrapper.eq(queryDTO.getChildId() != null, RehabilitationRecord::getChildId, queryDTO.getChildId())
                 .eq(StringUtils.hasText(queryDTO.getTrainingType()), RehabilitationRecord::getTrainingType, queryDTO.getTrainingType())
                 .ge(trainingDateStart != null, RehabilitationRecord::getTrainingDate, trainingDateStart)
-                .le(trainingDateEnd != null, RehabilitationRecord::getTrainingDate, trainingDateEnd)
-                .orderByDesc(RehabilitationRecord::getTrainingDate);
+                .le(trainingDateEnd != null, RehabilitationRecord::getTrainingDate, trainingDateEnd);
+        parentScopeHelper.applyChildScope(wrapper, queryDTO.getParentUserId(),
+                query -> query.apply("1 = 0"),
+                childIds -> wrapper.in(RehabilitationRecord::getChildId, childIds));
+        wrapper.orderByDesc(RehabilitationRecord::getTrainingDate);
         return Result.success(rehabilitationRecordService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper));
     }
 

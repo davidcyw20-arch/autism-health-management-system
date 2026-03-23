@@ -28,7 +28,8 @@ public class ParentController {
     @GetMapping
     public Result<Page<ParentInfo>> page(ParentQueryDTO queryDTO) {
         LambdaQueryWrapper<ParentInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.hasText(queryDTO.getParentName()), ParentInfo::getParentName, queryDTO.getParentName())
+        wrapper.eq(queryDTO.getUserId() != null, ParentInfo::getUserId, queryDTO.getUserId())
+                .like(StringUtils.hasText(queryDTO.getParentName()), ParentInfo::getParentName, queryDTO.getParentName())
                 .like(StringUtils.hasText(queryDTO.getPhone()), ParentInfo::getPhone, queryDTO.getPhone())
                 .eq(StringUtils.hasText(queryDTO.getRelationType()), ParentInfo::getRelationType, queryDTO.getRelationType())
                 .orderByDesc(ParentInfo::getCreateTime);

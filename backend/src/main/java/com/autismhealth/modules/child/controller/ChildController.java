@@ -1,6 +1,7 @@
 package com.autismhealth.modules.child.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.ParentScopeHelper;
 import com.autismhealth.modules.child.dto.ChildQueryDTO;
 import com.autismhealth.modules.child.dto.ChildSaveDTO;
 import com.autismhealth.modules.child.entity.ChildProfile;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class ChildController {
 
     private final ChildProfileService childProfileService;
+    private final ParentScopeHelper parentScopeHelper;
 
     @GetMapping
     public Result<Page<ChildProfile>> page(ChildQueryDTO queryDTO) {
@@ -29,8 +31,11 @@ public class ChildController {
         wrapper.like(StringUtils.hasText(queryDTO.getChildName()), ChildProfile::getChildName, queryDTO.getChildName())
                 .like(StringUtils.hasText(queryDTO.getChildNo()), ChildProfile::getChildNo, queryDTO.getChildNo())
                 .eq(StringUtils.hasText(queryDTO.getAutismLevel()), ChildProfile::getAutismLevel, queryDTO.getAutismLevel())
-                .eq(queryDTO.getStatus() != null, ChildProfile::getStatus, queryDTO.getStatus())
-                .orderByDesc(ChildProfile::getCreateTime);
+                .eq(queryDTO.getStatus() != null, ChildProfile::getStatus, queryDTO.getStatus());
+        parentScopeHelper.applyChildScope(wrapper, queryDTO.getParentUserId(),
+                query -> query.apply("1 = 0"),
+                childIds -> wrapper.in(ChildProfile::getId, childIds));
+        wrapper.orderByDesc(ChildProfile::getCreateTime);
         Page<ChildProfile> page = childProfileService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper);
         return Result.success(page);
     }

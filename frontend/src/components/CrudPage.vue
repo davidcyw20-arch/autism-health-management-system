@@ -131,7 +131,8 @@ const props = defineProps({
   updateApi: { type: Function, default: null },
   deleteApi: { type: Function, default: null },
   tableDataFallback: { type: Array, default: () => [] },
-  editableRoles: { type: Array, default: () => ['admin', 'doctor'] }
+  editableRoles: { type: Array, default: () => ['admin', 'doctor'] },
+  queryBuilder: { type: Function, default: null }
 })
 
 const userStore = useUserStore()
@@ -198,11 +199,14 @@ const getFieldProps = (field, isSearch = false) => {
   }
 }
 
-const buildParams = () => ({
-  current: pageState.current,
-  size: pageState.size,
-  ...searchForm
-})
+const buildParams = () => {
+  const baseParams = {
+    current: pageState.current,
+    size: pageState.size,
+    ...searchForm
+  }
+  return props.queryBuilder ? props.queryBuilder(baseParams, userStore.userInfo) : baseParams
+}
 
 const normalizePageData = payload => {
   if (payload?.records) {

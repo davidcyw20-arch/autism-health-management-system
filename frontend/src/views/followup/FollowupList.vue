@@ -1,7 +1,7 @@
 <template>
   <CrudPage
-    title="随访记录管理"
-    description="维护随访方式、家长反馈、问题发现与处理建议。"
+    :title="pageTitle"
+    :description="pageDescription"
     :columns="columns"
     :search-fields="searchFields"
     :form-fields="formFields"
@@ -11,13 +11,28 @@
     :update-api="updateFollowup"
     :delete-api="deleteFollowup"
     :table-data-fallback="fallbackData"
-    :editable-roles="['admin', 'doctor']"
+    :editable-roles="editableRoles"
+    :query-builder="buildQueryParams"
   />
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import CrudPage from '@/components/CrudPage.vue'
 import { addFollowup, deleteFollowup, getFollowupDetail, getFollowupList, updateFollowup } from '@/api/followup'
+import { useUserStore } from '@/store/user'
+
+const userStore = useUserStore()
+const roleCode = computed(() => userStore.userInfo.roleCode || 'parent')
+const editableRoles = ['admin', 'doctor']
+const pageTitle = computed(() => (roleCode.value === 'parent' ? '我的随访记录' : '随访记录管理'))
+const pageDescription = computed(() => (roleCode.value === 'parent'
+  ? '查看医生/康复师针对自己关联儿童的随访结果、家长反馈与处理建议。'
+  : '维护随访方式、家长反馈、问题发现与处理建议。'))
+
+const buildQueryParams = (params, userInfo) => (roleCode.value === 'parent'
+  ? { ...params, parentUserId: userInfo.userId }
+  : params)
 
 const methodOptions = [
   { label: '电话', value: '电话' },

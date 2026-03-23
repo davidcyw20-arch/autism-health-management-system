@@ -1,7 +1,7 @@
 <template>
   <CrudPage
-    title="家长信息管理"
-    description="维护家长、监护关系和紧急联系方式。"
+    :title="pageTitle"
+    :description="pageDescription"
     :columns="columns"
     :search-fields="searchFields"
     :form-fields="formFields"
@@ -10,13 +10,28 @@
     :create-api="addParent"
     :update-api="updateParent"
     :delete-api="deleteParent"
-    :editable-roles="['admin', 'doctor']"
+    :editable-roles="editableRoles"
+    :query-builder="buildQueryParams"
   />
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import CrudPage from '@/components/CrudPage.vue'
 import { addParent, deleteParent, getParentDetail, getParentList, updateParent } from '@/api/parent'
+import { useUserStore } from '@/store/user'
+
+const userStore = useUserStore()
+const roleCode = computed(() => userStore.userInfo.roleCode || 'parent')
+const editableRoles = ['admin', 'doctor']
+const pageTitle = computed(() => (roleCode.value === 'parent' ? '我的家长信息' : '家长信息管理'))
+const pageDescription = computed(() => (roleCode.value === 'parent'
+  ? '查看当前家长账号已绑定的基础信息、联系方式与紧急联系人。'
+  : '维护家长、监护关系和紧急联系方式。'))
+
+const buildQueryParams = (params, userInfo) => (roleCode.value === 'parent'
+  ? { ...params, userId: userInfo.userId }
+  : params)
 
 const genderOptions = [
   { label: '男', value: 1 },

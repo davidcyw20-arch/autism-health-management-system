@@ -1,7 +1,7 @@
 <template>
   <CrudPage
-    title="评估记录管理"
-    description="维护阶段评估、量表得分与干预建议。"
+    :title="pageTitle"
+    :description="pageDescription"
     :columns="columns"
     :search-fields="searchFields"
     :form-fields="formFields"
@@ -11,13 +11,28 @@
     :update-api="updateAssessment"
     :delete-api="deleteAssessment"
     :table-data-fallback="fallbackData"
-    :editable-roles="['admin', 'doctor']"
+    :editable-roles="editableRoles"
+    :query-builder="buildQueryParams"
   />
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import CrudPage from '@/components/CrudPage.vue'
 import { addAssessment, deleteAssessment, getAssessmentDetail, getAssessmentList, updateAssessment } from '@/api/assessment'
+import { useUserStore } from '@/store/user'
+
+const userStore = useUserStore()
+const roleCode = computed(() => userStore.userInfo.roleCode || 'parent')
+const editableRoles = ['admin', 'doctor']
+const pageTitle = computed(() => (roleCode.value === 'parent' ? '我的评估记录' : '评估记录管理'))
+const pageDescription = computed(() => (roleCode.value === 'parent'
+  ? '查看自己关联儿童的阶段评估结果、量表得分与干预建议。'
+  : '维护阶段评估、量表得分与干预建议。'))
+
+const buildQueryParams = (params, userInfo) => (roleCode.value === 'parent'
+  ? { ...params, parentUserId: userInfo.userId }
+  : params)
 
 const assessmentTypeOptions = [
   { label: '初诊评估', value: '初诊评估' },
