@@ -67,7 +67,7 @@
 
         <el-tabs v-model="activeTab" stretch class="login-tabs">
           <el-tab-pane label="登录" name="login">
-            <el-form :model="loginForm" @submit.prevent class="login-form">
+            <el-form :model="loginForm" @submit.prevent class="login-form" label-position="top">
               <el-form-item label="用户名">
                 <el-input v-model="loginForm.username" placeholder="请输入用户名" />
               </el-form-item>
@@ -80,7 +80,7 @@
             </el-form>
           </el-tab-pane>
           <el-tab-pane label="注册" name="register">
-            <el-form :model="registerForm" @submit.prevent class="login-form">
+            <el-form :model="registerForm" @submit.prevent class="login-form" label-position="top">
               <el-form-item label="用户名">
                 <el-input v-model="registerForm.username" placeholder="请输入用户名" />
               </el-form-item>

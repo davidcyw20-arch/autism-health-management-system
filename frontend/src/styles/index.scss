@@ -828,6 +828,12 @@ ul {
   padding-bottom: 8px;
   font-size: 14px;
   font-weight: 700;
+  line-height: 1.4;
+}
+
+.login-form .el-form-item__content {
+  width: 100%;
+  margin-left: 0 !important;
 }
 
 .login-submit {
