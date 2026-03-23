@@ -13,6 +13,7 @@
     :table-data-fallback="fallbackData"
     :editable-roles="editableRoles"
     :query-builder="buildQueryParams"
+    :submit-builder="buildSubmitData"
   />
 </template>
 
@@ -33,6 +34,11 @@ const pageDescription = computed(() => (roleCode.value === 'parent'
 const buildQueryParams = (params, userInfo) => (roleCode.value === 'parent'
   ? { ...params, parentUserId: userInfo.userId }
   : params)
+
+const buildSubmitData = (data, userInfo) => ({
+  ...data,
+  recordedBy: data.recordedBy || userInfo.userId
+})
 
 const emotionOptions = [
   { label: '平稳', value: '平稳' },

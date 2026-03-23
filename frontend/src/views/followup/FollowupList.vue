@@ -13,6 +13,7 @@
     :table-data-fallback="fallbackData"
     :editable-roles="editableRoles"
     :query-builder="buildQueryParams"
+    :submit-builder="buildSubmitData"
   />
 </template>
 
@@ -33,6 +34,11 @@ const pageDescription = computed(() => (roleCode.value === 'parent'
 const buildQueryParams = (params, userInfo) => (roleCode.value === 'parent'
   ? { ...params, parentUserId: userInfo.userId }
   : params)
+
+const buildSubmitData = (data, userInfo) => ({
+  ...data,
+  followUpPerson: data.followUpPerson || userInfo.userId
+})
 
 const methodOptions = [
   { label: '电话', value: '电话' },

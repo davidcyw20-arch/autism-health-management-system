@@ -67,7 +67,7 @@ const roleCode = computed(() => userStore.userInfo.roleCode || 'parent')
 const allMenus = [
   { path: '/dashboard', label: '首页仪表盘', roles: ['admin', 'doctor', 'parent'] },
   { path: '/children', label: '儿童档案', roles: ['admin', 'doctor', 'parent'] },
-  { path: '/parents', label: '家长信息', roles: ['admin', 'doctor'] },
+  { path: '/parents', label: '家长信息', roles: ['admin', 'doctor', 'parent'] },
   { path: '/diagnosis', label: '诊断信息', roles: ['admin', 'doctor'] },
   { path: '/health', label: '健康记录', roles: ['admin', 'doctor', 'parent'] },
   { path: '/rehab', label: '康复训练', roles: ['admin', 'doctor', 'parent'] },

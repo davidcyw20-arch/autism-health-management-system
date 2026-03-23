@@ -132,7 +132,8 @@ const props = defineProps({
   deleteApi: { type: Function, default: null },
   tableDataFallback: { type: Array, default: () => [] },
   editableRoles: { type: Array, default: () => ['admin', 'doctor'] },
-  queryBuilder: { type: Function, default: null }
+  queryBuilder: { type: Function, default: null },
+  submitBuilder: { type: Function, default: null }
 })
 
 const userStore = useUserStore()
@@ -206,6 +207,11 @@ const buildParams = () => {
     ...searchForm
   }
   return props.queryBuilder ? props.queryBuilder(baseParams, userStore.userInfo) : baseParams
+}
+
+const buildSubmitData = () => {
+  const baseData = { ...form }
+  return props.submitBuilder ? props.submitBuilder(baseData, userStore.userInfo) : baseData
 }
 
 const normalizePageData = payload => {
@@ -285,10 +291,11 @@ const saveForm = async () => {
   if (formRef.value) {
     await formRef.value.validate()
   }
+  const submitData = buildSubmitData()
   if (form.id && props.updateApi) {
-    await props.updateApi(form.id, form)
+    await props.updateApi(form.id, submitData)
   } else if (props.createApi) {
-    await props.createApi(form)
+    await props.createApi(submitData)
   }
   dialogVisible.value = false
   ElMessage.success('保存成功')

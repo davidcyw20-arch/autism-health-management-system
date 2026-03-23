@@ -11,7 +11,7 @@ const routes = [
     children: [
       { path: 'dashboard', component: () => import('@/views/Dashboard.vue'), meta: roleRouteMeta(['admin', 'doctor', 'parent']) },
       { path: 'children', component: () => import('@/views/child/ChildList.vue'), meta: roleRouteMeta(['admin', 'doctor', 'parent']) },
-      { path: 'parents', component: () => import('@/views/parent/ParentList.vue'), meta: roleRouteMeta(['admin', 'doctor']) },
+      { path: 'parents', component: () => import('@/views/parent/ParentList.vue'), meta: roleRouteMeta(['admin', 'doctor', 'parent']) },
       { path: 'diagnosis', component: () => import('@/views/diagnosis/DiagnosisList.vue'), meta: roleRouteMeta(['admin', 'doctor']) },
       { path: 'health', component: () => import('@/views/health/HealthRecordList.vue'), meta: roleRouteMeta(['admin', 'doctor', 'parent']) },
       { path: 'rehab', component: () => import('@/views/rehab/RehabList.vue'), meta: roleRouteMeta(['admin', 'doctor', 'parent']) },
