@@ -48,7 +48,14 @@
       <el-card class="login-card">
         <template #header>
           <div class="login-card-header">
-            <div>
+            <div class="login-card-heading">
+              <div class="login-card-brand">
+                <span class="login-card-brand-icon">{{ activeTab === 'login' ? 'AH' : 'RG' }}</span>
+                <div class="login-card-brand-text">
+                  <span>Autism Health Platform</span>
+                  <small>Secure Access Portal</small>
+                </div>
+              </div>
               <div class="login-card-title">{{ activeTab === 'login' ? '欢迎登录' : '创建账号' }}</div>
               <div class="login-card-subtitle">
                 {{ activeTab === 'login' ? '请输入账号信息以继续访问系统。' : '注册后将以家长身份进入平台。' }}
@@ -69,6 +76,7 @@
               </el-form-item>
               <el-button type="primary" class="w-full login-submit" @click="handleLogin">登录系统</el-button>
               <div class="login-tip">测试账号：admin / doctor01 / parent01，初始密码统一为 123456</div>
+              <div class="login-helper-text">建议使用管理员账号首次登录检查系统功能是否正常。</div>
             </el-form>
           </el-tab-pane>
           <el-tab-pane label="注册" name="register">
@@ -87,6 +95,7 @@
               </el-form-item>
               <el-button type="primary" class="w-full login-submit" @click="handleRegister">注册账号</el-button>
               <div class="login-tip">注册成功后，系统会自动分配为家长角色。</div>
+              <div class="login-helper-text">请使用常用手机号注册，便于后续家长信息关联与系统通知。</div>
             </el-form>
           </el-tab-pane>
         </el-tabs>

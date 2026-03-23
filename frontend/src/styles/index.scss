@@ -737,8 +737,52 @@ ul {
 .login-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 18px;
+}
+
+.login-card-heading {
+  flex: 1;
+}
+
+.login-card-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.login-card-brand-icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(95, 136, 255, 0.14), rgba(89, 184, 168, 0.16));
+  color: #325ea8;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.login-card-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.login-card-brand-text span {
+  color: #5e7394;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.login-card-brand-text small {
+  color: var(--text-light);
+  font-size: 12px;
 }
 
 .login-card-title {
@@ -759,38 +803,58 @@ ul {
 }
 
 .login-tabs .el-tabs__header {
-  margin-bottom: 22px;
+  margin-bottom: 24px;
 }
 
 .login-tabs .el-tabs__nav-wrap::after {
   background: rgba(226, 232, 241, 0.8);
 }
 
+.login-tabs .el-tabs__nav {
+  width: 100%;
+}
+
 .login-tabs .el-tabs__item {
   font-weight: 600;
   font-size: 15px;
+  height: 46px;
 }
 
 .login-form .el-form-item {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+}
+
+.login-form .el-form-item__label {
+  padding-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .login-submit {
-  margin-top: 6px;
-  min-height: 46px;
-  border-radius: 16px;
+  margin-top: 10px;
+  min-height: 48px;
+  border-radius: 18px;
   font-size: 15px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 14px 26px rgba(78, 112, 216, 0.22);
 }
 
 .login-tip {
-  margin-top: 14px;
+  margin-top: 16px;
   color: var(--text-sub);
   font-size: 13px;
   line-height: 1.7;
 }
 
+.login-helper-text {
+  margin-top: 8px;
+  color: var(--text-light);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
 .login-card-footer {
-  margin-top: 24px;
+  margin-top: 26px;
   padding-top: 18px;
   display: flex;
   justify-content: space-between;
@@ -1018,6 +1082,10 @@ ul {
   .login-card {
     width: 100%;
     margin: 0 auto 36px;
+  }
+
+  .login-card-header {
+    flex-direction: column;
   }
 
   .content {
