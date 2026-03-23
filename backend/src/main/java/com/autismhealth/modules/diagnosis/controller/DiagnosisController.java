@@ -1,6 +1,7 @@
 package com.autismhealth.modules.diagnosis.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.DateQueryHelper;
 import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.diagnosis.dto.DiagnosisQueryDTO;
 import com.autismhealth.modules.diagnosis.dto.DiagnosisSaveDTO;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 /**
  * 诊断信息控制器。
@@ -27,10 +30,14 @@ public class DiagnosisController {
 
     @GetMapping
     public Result<Page<DiagnosisInfo>> page(DiagnosisQueryDTO queryDTO) {
+        LocalDate diagnosisDateStart = DateQueryHelper.parseNullableDate(queryDTO.getDiagnosisDateStart());
+        LocalDate diagnosisDateEnd = DateQueryHelper.parseNullableDate(queryDTO.getDiagnosisDateEnd());
         LambdaQueryWrapper<DiagnosisInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(queryDTO.getChildId() != null, DiagnosisInfo::getChildId, queryDTO.getChildId())
                 .like(StringUtils.hasText(queryDTO.getDiagnosisHospital()), DiagnosisInfo::getDiagnosisHospital, queryDTO.getDiagnosisHospital())
                 .eq(StringUtils.hasText(queryDTO.getAutismLevel()), DiagnosisInfo::getAutismLevel, queryDTO.getAutismLevel())
+                .ge(diagnosisDateStart != null, DiagnosisInfo::getDiagnosisDate, diagnosisDateStart)
+                .le(diagnosisDateEnd != null, DiagnosisInfo::getDiagnosisDate, diagnosisDateEnd)
                 .orderByDesc(DiagnosisInfo::getDiagnosisDate);
         Page<DiagnosisInfo> page = diagnosisInfoService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper);
         return Result.success(page);

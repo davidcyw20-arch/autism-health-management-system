@@ -1,6 +1,7 @@
 package com.autismhealth.modules.assessment.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.DateQueryHelper;
 import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.assessment.dto.AssessmentQueryDTO;
 import com.autismhealth.modules.assessment.dto.AssessmentSaveDTO;
@@ -29,11 +30,13 @@ public class AssessmentController {
 
     @GetMapping
     public Result<Page<AssessmentRecord>> page(AssessmentQueryDTO queryDTO) {
+        LocalDate assessmentDateStart = DateQueryHelper.parseNullableDate(queryDTO.getAssessmentDateStart());
+        LocalDate assessmentDateEnd = DateQueryHelper.parseNullableDate(queryDTO.getAssessmentDateEnd());
         LambdaQueryWrapper<AssessmentRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(queryDTO.getChildId() != null, AssessmentRecord::getChildId, queryDTO.getChildId())
                 .eq(StringUtils.hasText(queryDTO.getAssessmentType()), AssessmentRecord::getAssessmentType, queryDTO.getAssessmentType())
-                .ge(StringUtils.hasText(queryDTO.getAssessmentDateStart()), AssessmentRecord::getAssessmentDate, LocalDate.parse(queryDTO.getAssessmentDateStart()))
-                .le(StringUtils.hasText(queryDTO.getAssessmentDateEnd()), AssessmentRecord::getAssessmentDate, LocalDate.parse(queryDTO.getAssessmentDateEnd()))
+                .ge(assessmentDateStart != null, AssessmentRecord::getAssessmentDate, assessmentDateStart)
+                .le(assessmentDateEnd != null, AssessmentRecord::getAssessmentDate, assessmentDateEnd)
                 .orderByDesc(AssessmentRecord::getAssessmentDate);
         return Result.success(assessmentRecordService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper));
     }

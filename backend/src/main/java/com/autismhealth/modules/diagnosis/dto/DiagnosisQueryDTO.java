@@ -12,4 +12,6 @@ public class DiagnosisQueryDTO {
     private Long childId;
     private String diagnosisHospital;
     private String autismLevel;
+    private String diagnosisDateStart;
+    private String diagnosisDateEnd;
 }

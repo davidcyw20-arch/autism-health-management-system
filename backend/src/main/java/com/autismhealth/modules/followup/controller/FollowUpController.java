@@ -1,6 +1,7 @@
 package com.autismhealth.modules.followup.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.DateQueryHelper;
 import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.followup.dto.FollowUpQueryDTO;
 import com.autismhealth.modules.followup.dto.FollowUpSaveDTO;
@@ -29,11 +30,13 @@ public class FollowUpController {
 
     @GetMapping
     public Result<Page<FollowUpRecord>> page(FollowUpQueryDTO queryDTO) {
+        LocalDate followUpDateStart = DateQueryHelper.parseNullableDate(queryDTO.getFollowUpDateStart());
+        LocalDate followUpDateEnd = DateQueryHelper.parseNullableDate(queryDTO.getFollowUpDateEnd());
         LambdaQueryWrapper<FollowUpRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(queryDTO.getChildId() != null, FollowUpRecord::getChildId, queryDTO.getChildId())
                 .eq(StringUtils.hasText(queryDTO.getFollowUpMethod()), FollowUpRecord::getFollowUpMethod, queryDTO.getFollowUpMethod())
-                .ge(StringUtils.hasText(queryDTO.getFollowUpDateStart()), FollowUpRecord::getFollowUpDate, LocalDate.parse(queryDTO.getFollowUpDateStart()))
-                .le(StringUtils.hasText(queryDTO.getFollowUpDateEnd()), FollowUpRecord::getFollowUpDate, LocalDate.parse(queryDTO.getFollowUpDateEnd()))
+                .ge(followUpDateStart != null, FollowUpRecord::getFollowUpDate, followUpDateStart)
+                .le(followUpDateEnd != null, FollowUpRecord::getFollowUpDate, followUpDateEnd)
                 .orderByDesc(FollowUpRecord::getFollowUpDate);
         return Result.success(followUpRecordService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper));
     }

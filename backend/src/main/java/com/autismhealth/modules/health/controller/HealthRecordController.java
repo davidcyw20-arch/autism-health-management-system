@@ -1,6 +1,7 @@
 package com.autismhealth.modules.health.controller;
 
 import com.autismhealth.common.result.Result;
+import com.autismhealth.common.support.DateQueryHelper;
 import com.autismhealth.common.support.EntityReferenceValidator;
 import com.autismhealth.modules.health.dto.HealthRecordQueryDTO;
 import com.autismhealth.modules.health.dto.HealthRecordSaveDTO;
@@ -29,11 +30,13 @@ public class HealthRecordController {
 
     @GetMapping
     public Result<Page<HealthRecord>> page(HealthRecordQueryDTO queryDTO) {
+        LocalDate recordDateStart = DateQueryHelper.parseNullableDate(queryDTO.getRecordDateStart());
+        LocalDate recordDateEnd = DateQueryHelper.parseNullableDate(queryDTO.getRecordDateEnd());
         LambdaQueryWrapper<HealthRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(queryDTO.getChildId() != null, HealthRecord::getChildId, queryDTO.getChildId())
                 .eq(StringUtils.hasText(queryDTO.getEmotionState()), HealthRecord::getEmotionState, queryDTO.getEmotionState())
-                .ge(StringUtils.hasText(queryDTO.getRecordDateStart()), HealthRecord::getRecordDate, LocalDate.parse(queryDTO.getRecordDateStart()))
-                .le(StringUtils.hasText(queryDTO.getRecordDateEnd()), HealthRecord::getRecordDate, LocalDate.parse(queryDTO.getRecordDateEnd()))
+                .ge(recordDateStart != null, HealthRecord::getRecordDate, recordDateStart)
+                .le(recordDateEnd != null, HealthRecord::getRecordDate, recordDateEnd)
                 .orderByDesc(HealthRecord::getRecordDate);
         return Result.success(healthRecordService.page(new Page<>(queryDTO.getCurrent(), queryDTO.getSize()), wrapper));
     }
