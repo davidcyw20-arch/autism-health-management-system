@@ -5,7 +5,7 @@
 
 本项目现已统一为 `utf8mb4`：
 - 数据库初始化脚本使用 `SET NAMES utf8mb4`
-- Spring Boot JDBC 连接使用 `characterEncoding=utf8mb4`
+- Spring Boot JDBC 连接使用 `characterEncoding=utf8`，并通过 `connectionCollation=utf8mb4_unicode_ci` 配合数据库端 `utf8mb4` 字符集，避免 MySQL 驱动报 `Unsupported character encoding 'utf8mb4'`
 - SQL 初始化显式声明 `UTF-8` 编码读取
 
 如果你的库里已经写入了乱码数据，需要重新导入示例数据，旧数据不会自动恢复。推荐步骤：
